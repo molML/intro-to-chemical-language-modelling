@@ -6,7 +6,7 @@ from rdkit.Chem.SaltRemover import SaltRemover
 
 RDLogger.DisableLog("rdApp.*")
 
-_ELEMENTS_STR = r"(?<=\[)Cs(?=\])|Br|Cl|C|H|N|O|S|P|F|I|b|c|n|o|s|p"
+_ELEMENTS_STR = r"(?<=\[)Cs(?=\])|Si|Xe|Ba|Rb|Ra|Sr|Dy|Li|Kr|Bi|Mn|He|Am|Pu|Cm|Pm|Ne|Th|Ni|Pr|Fe|Lu|Pa|Fm|Tm|Tb|Er|Be|Al|Gd|Eu|te|As|Pt|Lr|Sm|Ca|La|Ti|Te|Ac|Cf|Rf|Na|Cu|Au|Nd|Ag|Se|se|Zn|Mg|Br|Cl|Pb|U|V|K|C|B|H|N|O|S|P|F|I|b|c|n|o|s|p"
 __REGEXES = {
     "segmentation": rf"(\[[^\]]+]|{_ELEMENTS_STR}|"  # All characters included within a braket [ XX ]
     + r"\(|\)|\.|=|#|-|\+|\\\\|\/|:|~|@|\?|>|\*|\$|\%\d{2}|\d)",
@@ -106,9 +106,8 @@ def is_supported_chemical(smiles, verbosity=False):
         returns
         true if unsupported elements are presentotherwise false.
         """
-        tokens = set(
-            segment_smiles(smiles, segment_sq_brackets=True)
-        )  # tokenize SMILES string
+        tokens = set(segment_smiles(smiles, segment_sq_brackets=True))  # tokenize SMILES string
+
         # elements = {token for token in tokens if is_element(token)} # checks if supported
         elements = {
             token
