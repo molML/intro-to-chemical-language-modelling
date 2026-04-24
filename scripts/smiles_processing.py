@@ -1,5 +1,11 @@
+import os
 import re
 from typing import List
+
+import math
+import json
+import pathlib
+
 from rdkit import Chem, RDLogger
 from rdkit.Chem.MolStandardize import rdMolStandardize
 from rdkit.Chem.SaltRemover import SaltRemover
@@ -36,6 +42,51 @@ __SUPPORTED_ELEMENTS = {
     "o",
     "s",
 }
+
+def get_package_path():
+    return str(pathlib.Path(__file__).parent.parent.resolve())
+
+package_path = get_package_path()
+
+def save_json(obj, path):
+    with open(path, "w") as f:
+        json.dump(obj, f, indent=4)
+
+
+def load_json(path):
+    with open(path, "r") as f:
+        return json.load(f)
+
+def get_periodic_table_properties(fillna=None):
+    file_dir = str(pathlib.Path(__file__).parent.resolve())
+    properties = load_json(
+        os.path.join(file_dir, 'periodic_table_properties.json')
+    )
+    if fillna:
+        properties = {
+            element: {
+                feature: fillna if math.isnan(float(value)) else value
+                for feature, value in element_props.items()
+            }
+            for element, element_props in properties.items()
+        }
+    return properties
+
+
+_ELEMENTS = get_periodic_table_properties().keys()
+
+
+def is_aromatic(token):
+    '''
+    An element is considered aromatic, if lower case is not in _ELEMENTS, but the uppercase character is.
+    arguments: token
+    returns: 1: is aromatic, 0 is not aromatic
+    '''
+    return token not in _ELEMENTS and token.title() in _ELEMENTS
+
+
+def is_element(token):
+    return token in _ELEMENTS or is_aromatic(token)
 
 
 def clean_smiles(
@@ -108,8 +159,10 @@ def is_supported_chemical(smiles, verbosity=False):
         """
         tokens = set(segment_smiles(smiles, segment_sq_brackets=True))  # tokenize SMILES string
 
+        elements = {token for token in tokens if is_element(token)} # checks if supported
+
         return (
-            len(tokens.difference(__SUPPORTED_ELEMENTS)) > 0
+            len(elements.difference(__SUPPORTED_ELEMENTS)) > 0
         )  # returns number of unsupported
 
     atomic_mass = contains_atomic_mass(smiles)  # check for atomic mass in SMILES
