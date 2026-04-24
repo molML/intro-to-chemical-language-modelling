@@ -108,14 +108,8 @@ def is_supported_chemical(smiles, verbosity=False):
         """
         tokens = set(segment_smiles(smiles, segment_sq_brackets=True))  # tokenize SMILES string
 
-        # elements = {token for token in tokens if is_element(token)} # checks if supported
-        elements = {
-            token
-            for token in tokens
-            if token in __SUPPORTED_ELEMENTS or token.title() in __SUPPORTED_ELEMENTS
-        }
         return (
-            len(elements.difference(__SUPPORTED_ELEMENTS)) > 0
+            len(tokens.difference(__SUPPORTED_ELEMENTS)) > 0
         )  # returns number of unsupported
 
     atomic_mass = contains_atomic_mass(smiles)  # check for atomic mass in SMILES
